@@ -19,17 +19,25 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60000);
+
     const response = await fetch(
-      "https://api-inference.huggingface.co/models/facebook/mms-tts-nan",
+      "https://router.huggingface.co/hf-inference/models/facebook/mms-tts-nan",
       {
         method: "POST",
+        signal: controller.signal,
         headers: {
           Authorization: `Bearer ${process.env.HF_API_TOKEN}`,
           "Content-Type": "application/json",
+          Accept: "audio/wav",
+          "x-use-cache": "false",
         },
         body: JSON.stringify({ inputs: text }),
       }
     );
+
+    clearTimeout(timeout);
 
     if (!response.ok) {
       const err = await response.text();
@@ -42,6 +50,7 @@ module.exports = async function handler(req, res) {
     return res.send(Buffer.from(arrayBuffer));
   } catch (error) {
     console.error("Proxy error:", error);
-    return res.status(500).json({ error: error.message });
+    const message = error?.name === "AbortError" ? "Hugging Face request timed out" : error.message;
+    return res.status(500).json({ error: message });
   }
 };
