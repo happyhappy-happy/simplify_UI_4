@@ -28,14 +28,29 @@
           body: JSON.stringify({ data: [text] })
         });
 
+        console.log("status", response.status);
+        const bodyText = await response.text();
+        console.log("body", bodyText);
+
         if (!response.ok) {
-          const bodyText = await response.text();
           errorDiv.textContent = "語音生成失敗：" + bodyText;
           return;
         }
 
-        const result = await response.json();
-        const audioData = result.data[0].data; // Base64 音訊
+        let result;
+        try {
+          result = JSON.parse(bodyText);
+        } catch {
+          errorDiv.textContent = "語音生成失敗：回傳內容不是 JSON";
+          return;
+        }
+
+        const audioData = result?.data?.[0]?.data;
+        if (!audioData) {
+          errorDiv.textContent = "語音生成失敗：Spaces 未回傳音訊資料";
+          return;
+        }
+
         const audioBytes = Uint8Array.from(atob(audioData), c => c.charCodeAt(0));
         const audioBlob = new Blob([audioBytes], { type: "audio/wav" });
         const url = URL.createObjectURL(audioBlob);
