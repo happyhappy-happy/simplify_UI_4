@@ -14,33 +14,44 @@
   <div id="errorMsg" style="color:red;"></div>
 
   <script>
+    const API_BASE_URL = "https://simplify-ui-4.vercel.app"; // 請改成你的 Vercel 部署網址
+
     document.getElementById("playTTS").addEventListener("click", async () => {
       const text = document.getElementById("textInput").value;
       const errorDiv = document.getElementById("errorMsg");
       errorDiv.textContent = ""; // 清空錯誤訊息
 
+      if (!API_BASE_URL.includes("vercel.app") && !API_BASE_URL.includes("localhost")) {
+        errorDiv.textContent = "請設定 API_BASE_URL 為你的 Vercel 部署網址。";
+        return;
+      }
+
       try {
-        const response = await fetch(`/api/tts?text=${encodeURIComponent(text)}`);
+        const response = await fetch(`${API_BASE_URL}/api/tts?text=${encodeURIComponent(text)}`);
 
         if (!response.ok) {
-          // 嘗試解析 JSON 錯誤訊息
           let errMsg = "未知錯誤";
-          try {
-            const err = await response.json();
-            errMsg = err.error || errMsg;
-          } catch {
-            errMsg = "伺服器回傳非 JSON 錯誤";
+          const contentType = response.headers.get("content-type") || "";
+          const bodyText = await response.text();
+          if (contentType.includes("application/json")) {
+            try {
+              const err = JSON.parse(bodyText);
+              errMsg = err.error || JSON.stringify(err);
+            } catch {
+              errMsg = bodyText || errMsg;
+            }
+          } else {
+            errMsg = bodyText || "伺服器回傳非 JSON 錯誤";
           }
           errorDiv.textContent = "語音生成失敗：" + errMsg;
           return;
         }
 
-        // 成功情況：取得音訊 Blob
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         const audio = document.getElementById("audioPlayer");
         audio.src = url;
-        audio.play();
+        await audio.play();
       } catch (e) {
         errorDiv.textContent = "前端錯誤：" + e.message;
       }
