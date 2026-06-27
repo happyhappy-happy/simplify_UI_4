@@ -42,6 +42,28 @@
       </div>
     </div>
 
+    <button id="playTTS">播放閩南語語音</button>
+    <audio id="audioPlayer" controls></audio>
+
+    <script>
+    document.getElementById("playTTS").addEventListener("click", async () => {
+      const text = "你好，我是閩南語語音測試"; // 你要轉語音的文字
+      const response = await fetch(`/api/tts?text=${encodeURIComponent(text)}`);
+      
+      if (!response.ok) {
+        alert("語音生成失敗");
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = document.getElementById("audioPlayer");
+      audio.src = url;
+      audio.play();
+    });
+    </script>
+
+
   </div>
 
   <script>
