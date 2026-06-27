@@ -14,20 +14,38 @@
   <div id="errorMsg" style="color:red;"></div>
 
   <script>
-    const API_BASE_URL = "https://simplify-ui-4.vercel.app"; // 請改成你的 Vercel 部署網址
+    const params = new URLSearchParams(window.location.search);
+    const configuredApiBase = params.get("api") || window.__TTS_API_URL__ || "https://simplify-ui-4.vercel.app";
+    const API_BASE_URL = configuredApiBase.replace(/\/$/, "");
+
+    function fallbackSpeech(text) {
+      if (!("speechSynthesis" in window)) return false;
+      const synth = window.speechSynthesis;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "zh-TW";
+      utterance.rate = 1;
+      utterance.pitch = 1;
+
+      const voices = synth.getVoices();
+      const preferredVoice = voices.find((voice) => /zh|TW|Taiwan/i.test(voice.lang)) || voices[0];
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+
+      synth.cancel();
+      synth.speak(utterance);
+      return true;
+    }
 
     document.getElementById("playTTS").addEventListener("click", async () => {
       const text = document.getElementById("textInput").value;
       const errorDiv = document.getElementById("errorMsg");
-      errorDiv.textContent = ""; // 清空錯誤訊息
-
-      if (!API_BASE_URL.includes("vercel.app") && !API_BASE_URL.includes("localhost")) {
-        errorDiv.textContent = "請設定 API_BASE_URL 為你的 Vercel 部署網址。";
-        return;
-      }
+      errorDiv.textContent = "";
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/tts?text=${encodeURIComponent(text)}`);
+        const response = await fetch(`${API_BASE_URL}/api/tts?text=${encodeURIComponent(text)}`, {
+          cache: "no-store",
+        });
 
         if (!response.ok) {
           let errMsg = "未知錯誤";
@@ -44,6 +62,7 @@
             errMsg = bodyText || "伺服器回傳非 JSON 錯誤";
           }
           errorDiv.textContent = "語音生成失敗：" + errMsg;
+          fallbackSpeech(text);
           return;
         }
 
@@ -53,7 +72,8 @@
         audio.src = url;
         await audio.play();
       } catch (e) {
-        errorDiv.textContent = "前端錯誤：" + e.message;
+        errorDiv.textContent = "語音生成失敗：" + e.message;
+        fallbackSpeech(text);
       }
     });
   </script>
