@@ -23,7 +23,7 @@ module.exports = async function handler(req, res) {
     const timeout = setTimeout(() => controller.abort(), 60000);
 
     const response = await fetch(
-      "https://router.huggingface.co/hf-inference/models/facebook/mms-tts-nan",
+      "https://api-inference.huggingface.co/models/facebook/mms-tts-nan",
       {
         method: "POST",
         signal: controller.signal,
@@ -31,7 +31,7 @@ module.exports = async function handler(req, res) {
           Authorization: `Bearer ${process.env.HF_API_TOKEN}`,
           "Content-Type": "application/json",
           Accept: "audio/wav",
-          "x-use-cache": "false",
+          "x-wait-for-model": "false",
         },
         body: JSON.stringify({ inputs: text }),
       }
