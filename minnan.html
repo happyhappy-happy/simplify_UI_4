@@ -14,53 +14,25 @@
   <div id="errorMsg" style="color:red;"></div>
 
   <script>
-    const API_URL = "https://huggingface.co/spaces/happy0708/minnan_test/api/predict/";
-
-    document.getElementById("playTTS").addEventListener("click", async () => {
-      const text = document.getElementById("textInput").value;
-      const errorDiv = document.getElementById("errorMsg");
-      errorDiv.textContent = "";
-
-      try {
-        const response = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data: [text] })
-        });
-
-        console.log("status", response.status);
-        const bodyText = await response.text();
-        console.log("body", bodyText);
-
-        if (!response.ok) {
-          errorDiv.textContent = "語音生成失敗：" + bodyText;
-          return;
-        }
-
-        let result;
-        try {
-          result = JSON.parse(bodyText);
-        } catch {
-          errorDiv.textContent = "語音生成失敗：回傳內容不是 JSON";
-          return;
-        }
-
-        const audioData = result?.data?.[0]?.data;
-        if (!audioData) {
-          errorDiv.textContent = "語音生成失敗：Spaces 未回傳音訊資料";
-          return;
-        }
-
-        const audioBytes = Uint8Array.from(atob(audioData), c => c.charCodeAt(0));
-        const audioBlob = new Blob([audioBytes], { type: "audio/wav" });
-        const url = URL.createObjectURL(audioBlob);
-
-        const audio = document.getElementById("audioPlayer");
-        audio.src = url;
-        await audio.play();
-      } catch (e) {
-        errorDiv.textContent = "語音生成失敗：" + e.message;
+    function speakWithBrowser(text) {
+      if (!('speechSynthesis' in window)) {
+        document.getElementById('errorMsg').textContent = '瀏覽器不支援語音播放';
+        return;
       }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'zh-TW';
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    }
+
+    document.getElementById('playTTS').addEventListener('click', () => {
+      const text = document.getElementById('textInput').value;
+      const errorDiv = document.getElementById('errorMsg');
+      errorDiv.textContent = '';
+      speakWithBrowser(text);
     });
   </script>
 </body>
