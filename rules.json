@@ -1,0 +1,315 @@
+{
+  "rules": [
+    {
+      "id": "article5",
+      "article": "第五條",
+      "title": "保險範圍：意外傷害身故保險金或喪葬費用保險金的給付",
+
+      "type": "death",
+
+      "conditions": {
+        "accidentRequired": true,
+        "withinPolicyPeriod": true,
+        "deathRequired": true,
+        "within180Days": true,
+        "allowCausationProofAfter180Days": true
+      },
+
+      "calculation": {
+        "method": "fixedAmount",
+        "field": "coverageAmount"
+      },
+
+      "specialRules": {
+        "guardianshipBecomesFuneralExpense": true,
+        "funeralExpenseLimitRequired": true,
+        "multiCompanyProportionalSharing": true
+      },
+
+      "limits": {
+        "maxAmount": "coverageAmount"
+      },
+
+      "fullText": "【保險範圍：意外傷害身故保險金或喪葬費用保險金的給付】\n第 五 條 被保險人於本契約有效期間內遭受第二條約定的意外傷害事故，自意外傷害事故發生之日起一百八十日以內身故者，本公司按保險金額給付身故保險金。但超過一百八十日身故者，受益人若能證明被保險人之身故與該意外傷害事故具有因果關係者，不在此限。\n訂立本契約時，以受監護宣告尚未撤銷者為被保險人，其「意外傷害身故保險金」變更為喪葬費用保險金。\n前項被保險人於民國九十九年二月三日（含）以後所投保之喪葬費用保險金額總和（不限本公司），不得超過遺產及贈與稅法第十七條有關遺產稅喪葬費扣除額之半數，其超過部分本公司不負給付責任，本公司並應無息退還該超過部分之已繳保險費。\n前項情形，如要保人向二家（含）以上保險公司投保，或向同一保險公司投保數個保險契(附)約，且其投保之喪葬費用保險金額合計超過所定之限額者，本公司於所承保之喪葬費用金額範圍內，依各要保書所載之要保時間先後，依約給付喪葬費用保險金至前項喪葬費用額度上限為止，如有二家以上保險公司之保險契約要保時間相同或無法區分其要保時間之先後者，各該保險公司應依其喪葬費用保險金額與扣除要保時間在先之保險公司應理賠之金額後所餘之限額比例分擔其責任。",
+
+      "keywords": [
+        "身故",
+        "死亡",
+        "喪葬",
+        "180日",
+        "因果關係"
+      ]
+    },
+
+    {
+      "id": "article6",
+      "article": "第六條",
+      "title": "保險範圍：意外傷害失能保險金的給付",
+
+      "type": "disability",
+
+      "conditions": {
+        "accidentRequired": true,
+        "withinPolicyPeriod": true,
+        "disabilityRequired": true,
+        "within180Days": true,
+        "allowCausationProofAfter180Days": true
+      },
+
+      "calculation": {
+        "method": "coverageAmountMultiplyRatio",
+        "ratioSource": "disabilityTable"
+      },
+
+      "specialRules": {
+        "sameAccidentMultipleDisabilitiesAllowed": true,
+        "sameHandOrFootOnlyHighest": true,
+        "mergePreviousDisabilities": true,
+        "deductPreviousPaidAmount": true,
+        "levelOneTerminatesContract": true
+      },
+
+      "limits": {
+        "maxAmount": "coverageAmount",
+        "accumulatedMaxAmount": "coverageAmount"
+      },
+
+      "fullText": "【保險範圍：意外傷害失能保險金的給付】\n第 六 條 被保險人於本契約有效期間內遭受第二條約定的意外傷害事故，自意外傷害事故發生之日起一百八十日以內致成附表一所列失能程度之一者，本公司給付意外傷害失能保險金，其金額按保險金額乘以該表所列之給付比例計算。但超過一百八十日致成失能者，受益人若能證明被保險人之失能與該意外傷害事故具有因果關係者，不在此限。\n被保險人因同一意外傷害事故致成附表一所列二項以上失能程度時，本公司給付各該項意外傷害失能保險金之和，最高以保險金額為限。但不同失能項目屬於同一手或同一足時，僅給付一項意外傷害失能保險金；若失能項目所屬失能等級不同時，給付較嚴重項目的意外傷害失能保險金。\n被保險人因本次意外傷害事故所致之失能，如合併以前（含本契約訂立前）的失能，可領附表一所列較嚴重項目的意外傷害失能保險金者，本公司按較嚴重的項目給付意外傷害失能保險金，但以前的失能，視同已給付意外傷害失能保險金，應扣除之。\n前項情形，若被保險人扣除以前的失能後得領取之保險金低於單獨請領之金額者，不適用合併之約定。被保險人於本契約有效期間內因不同意外傷害事故申領意外傷害失能保險金時，本公司累計給付金額最高以保險金額為限。\n第一項情形被保險人之失能如係附表一所列失能等級第一級者，本公司依本條約定給付保險金後，本契約效力即行終止。",
+
+      "keywords": [
+        "失能",
+        "殘廢",
+        "失能等級",
+        "附表一"
+      ]
+    },
+
+    {
+      "id": "article7",
+      "article": "第七條",
+      "title": "保險範圍：意外傷害骨折保險金的給付",
+
+      "type": "fracture",
+
+      "conditions": {
+        "accidentRequired": true,
+        "withinPolicyPeriod": true,
+        "fractureRequired": true,
+        "hospitalDiagnosisRequired": true,
+        "within180Days": true,
+        "allowCausationProofAfter180Days": true
+      },
+
+      "calculation": {
+        "method": "coverageAmountMultiplyBaseRateAndRatio",
+        "baseRate": 0.05,
+        "ratioSource": "fractureTable"
+      },
+
+      "fractureAdjustment": {
+        "completeFracture": 1,
+        "incompleteFracture": 0.5,
+        "crackFracture": 0.25
+      },
+
+      "specialRules": {
+        "sameAccidentOnlyOnePayment": true,
+        "multipleFracturesUseHighestRatio": true
+      },
+
+      "fullText": "【保險範圍：意外傷害骨折保險金的給付】\n第 七 條 被保險人於本契約有效期間內遭受第二條約定的意外傷害事故，自意外傷害事故發生之日起一百八十日以內，經醫院或診所治療，診斷確定致成附表二骨折別表所列項目之一，本公司按保險金額的 5%乘以附表二骨折別表所定給付比例，給付「意外傷害骨折保險金」。\n如被保險人自意外傷害事故發生之日起超過一百八十日經診斷確定骨折者，若能證明其與該意外傷害事故具有因果關係者，本公司仍依前項約定給付「意外傷害骨折保險金」，不受前項一百八十日之限制。附表二骨折別表內所載給付比例僅適用於骨骼完全折斷之情形。如係不完全骨折，其給付比例為完全骨折的二分之一；如係骨骼龜裂者，其給付比例為完全骨折的四分之一。\n同一意外傷害事故僅給付一次意外傷害骨折保險金。如因同一意外傷害事故致有二處以上骨折時，本公司僅給付一項最高比例之意外傷害骨折保險金。",
+
+      "keywords": [
+        "骨折",
+        "完全骨折",
+        "不完全骨折",
+        "龜裂",
+        "附表二"
+      ]
+    },
+
+    {
+      "id": "article8",
+      "article": "第八條",
+      "title": "保險範圍：意外傷害脫臼開放性復位術保險金的給付",
+
+      "type": "dislocation",
+
+      "conditions": {
+        "accidentRequired": true,
+        "withinPolicyPeriod": true,
+        "dislocationRequired": true,
+        "openReductionSurgeryRequired": true,
+        "hospitalDiagnosisRequired": true,
+        "within180Days": true,
+        "allowCausationProofAfter180Days": true
+      },
+
+      "calculation": {
+        "method": "coverageAmountMultiplyBaseRateAndRatio",
+        "baseRate": 0.05,
+        "ratioSource": "dislocationTable"
+      },
+
+      "specialRules": {
+        "sameAccidentOnlyOnePayment": true,
+        "multipleDislocationsUseHighestRatio": true
+      },
+
+      "fullText": "【保險範圍：意外傷害脫臼開放性復位術保險金的給付】\n第 八 條 被保險人於本契約有效期間內遭受第二條約定的意外傷害事故，自意外傷害事故發生之日起一百八十日以內，經醫院或診所治療，診斷確定致成附表三脫臼別表所列脫臼項目之一，經醫生診斷必須且實際施行「脫臼開放性復位術」治療者，本公司依其脫臼部位按保險金額的 5%乘以附表三脫臼別表所定給付比例，給付「意外傷害脫臼開放性復位術保險金」。\n如被保險人自意外傷害事故發生之日起超過一百八十日經診斷確定脫臼而施行「脫臼開放性復位術」者，若能證明被保險人之脫臼與該意外傷害事故具有因果關係者，本公司仍依前項約定給付意外傷害脫臼開放性復位術保險金，不受前項一百八十日之限制。\n同一意外傷害事故僅給付一次意外傷害脫臼開放性復位術保險金。如因同一意外傷害事故致成二項以上脫臼經醫師診斷必須且實際施行二項以上之「脫臼開放性復位術」治療者，本公司僅給付一項較高比例之意外傷害脫臼開放性復位術保險金。",
+
+      "keywords": [
+        "脫臼",
+        "開放性復位術",
+        "附表三"
+      ]
+    },
+
+    {
+      "id": "article9",
+      "article": "第九條",
+      "title": "保險範圍：意外傷害創傷縫合處置保險金的給付",
+
+      "type": "suture",
+
+      "conditions": {
+        "accidentRequired": true,
+        "withinPolicyPeriod": true,
+        "sutureTreatmentRequired": true,
+        "doctorDiagnosisRequired": true
+      },
+
+      "calculation": {
+        "method": "coverageAmountMultiplyBaseRateAndRatio",
+        "baseRate": 0.001,
+        "ratioSource": "sutureTable"
+      },
+
+      "specialRules": {
+        "sameAccidentOnlyOnePayment": true,
+        "multipleSuturesUseHighestRatio": true
+      },
+
+      "fullText": "【保險範圍：意外傷害創傷縫合處置保險金的給付】\n第 九 條 被保險人於本契約有效期間內遭受第二條約定的意外傷害事故，於醫院或診所經醫師診斷必須接受創傷縫合處置治療且已接受縫合處置者，本公司依其創傷大小按保險金額的 0.1%乘以附表四意外創傷縫合處置項目及給付比例表所定給付比例，給付「意外傷害創傷縫合處置保險金」。\n同一意外傷害事故僅給付一次意外傷害創傷縫合處置保險金。如因同一意外傷害事故而接受二項以上創傷縫合處置者，本公司僅給付一項較高比例之意外傷害創傷縫合處置保險金。",
+
+      "keywords": [
+        "縫合",
+        "創傷",
+        "傷口",
+        "附表四"
+      ]
+    },
+
+    {
+      "id": "article10",
+      "article": "第十條",
+      "title": "保險範圍：保險金給付的限制",
+
+      "type": "claimLimit",
+
+      "conditions": {
+        "sameAccidentDeathAndDisability": true
+      },
+
+      "specialRules": {
+        "deathAndDisabilityCombinedLimit": "coverageAmount",
+        "deductPaidDisabilityAmount": true,
+        "differentAccidentsCanClaimSeparately": true
+      },
+
+      "fullText": "【保險範圍：保險金給付的限制】\n第 十 條 被保險人於本契約有效期間內因同一意外傷害事故致成失能後身故，並符合本契約第五條及第六條約定之申領條件時，本公司之給付總金額合計最高以保險金額為限。\n前項情形，受益人已受領意外傷害失能保險金者，本公司僅就保險金額與已受領金額間之差額負給付責任。\n被保險人於本契約有效期間內因不同意外傷害事故致成失能、身故時，受益人得依第五條及第六條之約定分別申領保險金，不適用第一項之約定。",
+
+      "keywords": [
+        "給付限制",
+        "失能後身故",
+        "差額給付",
+        "同一事故",
+        "已受領",
+        "給付總額",
+        "限額",
+        "差額"
+      ]
+    },
+
+    {
+      "id": "article11",
+      "article": "第十一條",
+      "title": "除外責任（原因）",
+
+      "type": "exclusion",
+
+      "conditions": {
+        "intentionalAct": true,
+        "crime": true,
+        "drunkDriving": true,
+        "war": true,
+        "nuclearAccident": true
+      },
+
+      "specialRules": {
+        "injuryOrDisabilityStillPayableInSomeCases": true
+      },
+
+      "effect": {
+        "denyClaim": true
+      },
+
+      "fullText": "【除外責任（原因）】\n第 十一 條 被保險人因下列原因致成死亡、失能或傷害時，本公司不負給付保險金的責任：\n一、要保人、被保險人的故意行為。\n二、被保險人犯罪行為。\n三、被保險人飲酒後駕（騎）車，其吐氣或血液所含酒精成份超過道路交通法令規定標準者。\n四、戰爭（不論宣戰與否）、內亂及其他類似的武裝變亂。但契約另有約定者不在此限。\n五、因原子或核子能裝置所引起的爆炸、灼熱、輻射或污染。但契約另有約定者不在此限。\n前項第一款及第二十三條情形（除被保險人的故意行為外），致被保險人傷害或失能時，本公司仍給付保險金。",
+
+      "keywords": [
+        "除外責任",
+        "故意行為",
+        "犯罪",
+        "酒駕",
+        "飲酒",
+        "駕車",
+        "騎車",
+        "戰爭",
+        "核能",
+        "原子能",
+        "武裝變亂"
+      ]
+    },
+
+    {
+      "id": "article12",
+      "article": "第十二條",
+      "title": "不保事項",
+
+      "type": "nonCoverage",
+
+      "conditions": {
+        "combatSports": true,
+        "martialArtsCompetition": true,
+        "horseRacing": true,
+        "boxing": true,
+        "stuntPerformance": true,
+        "vehicleCompetition": true
+      },
+
+      "effect": {
+        "denyClaim": true
+      },
+
+      "fullText": "【不保事項】\n第 十二 條 被保險人從事下列活動，致成死亡、失能或傷害時，除本契約另有約定外，本公司不負給付保險金的責任：\n一、被保險人從事角力、摔跤、柔道、空手道、跆拳道、馬術、拳擊、特技表演等的競賽或表演。\n二、被保險人從事汽車、機車及自由車等的競賽或表演。",
+
+      "keywords": [
+        "不保事項",
+        "競賽",
+        "特技",
+        "拳擊",
+        "賽車",
+        "角力",
+        "摔跤",
+        "柔道",
+        "空手道",
+        "跆拳道",
+        "馬術",
+        "汽車",
+        "機車",
+        "自由車",
+        "表演"
+      ]
+    }
+  ]
+}

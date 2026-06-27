@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>理賠金額估算</title>
+  <link rel="stylesheet" href="styles_estimate.css" />
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="header-content">
+        <div class="header-brand">
+          <img src="images/icon.jpg" alt="icon" class="icon" />
+          <h1>理賠金額估算</h1>
+        </div>
+        <div class="header-actions">
+          <a class="index-btn" href="index.html">首頁</a>
+          <a class="estimate-btn" href="simplify2_voice.html">回到保險條文</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="main-layout single-column">
+      <div class="content-area single-column">
+        <div class="article-content calculator-content">
+          <div class="calculator-panel">
+            <div class="calculator-header">
+              <p>請填寫保險資訊與事件描述，系統將依項目提供估算建議結果。</p>
+            </div>
+
+            <div class="calculator-grid table-layout">
+              <div class="form-card">
+                <div class="card-title">保險資訊</div>
+                <div class="field-group-row">
+                  <div class="field-column">
+                    <div class="field-row">
+                      <label class="field-label" for="insuredAge">投保年齡</label>
+                      <input id="insuredAge" class="field-input" type="number" min="0" value="35" />
+                    </div>
+                    <div class="field-row">
+                      <label class="field-label" for="currentAge">目前年齡</label>
+                      <input id="currentAge" class="field-input" type="number" min="0" value="40" />
+                    </div>
+                    <div class="field-row">
+                      <label class="field-label" for="gender">性別</label>
+                      <select id="gender" class="field-input">
+                        <option value="female">女</option>
+                        <option value="male" selected>男</option>
+                        <option value="other">其他</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="field-column">
+                    <div class="field-row">
+                      <label class="field-label" for="insuranceType">保險種類</label>
+                      <select id="insuranceType" class="field-input">
+                        <option value="life">壽險保障</option>
+                        <option value="travel">旅行平安險</option>
+                        <option value="accident" selected>意外傷害險</option>
+                        <option value="medical">健康醫療險</option>
+                      </select>
+                    </div>
+                    <div class="field-row">
+                      <label class="field-label" for="insuranceProduct">保險商品</label>
+                      <input id="insuranceProduct" class="field-input" type="text" value="富邦人壽 Fun 肆動網路投保傷害保險" />
+                    </div>
+                    <div class="field-row">
+                      <label class="field-label" for="coverageAmount">投保金額</label>
+                      <div class="amount-input-group">
+                        <input id="coverageAmount" class="field-input" type="number" min="0" value="1000000" />
+                        <span class="amount-unit">新臺幣</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-card full-width">
+                <div class="card-title">事件描述</div>
+                <textarea id="eventDescription" class="textarea-input" rows="6" placeholder="例如：我先生因車禍摔倒，送醫後診斷為鎖骨完全骨折，請問可以理賠多少錢？">我先生因車禍摔倒，送醫後診斷為鎖骨完全骨折，請問可以理賠多少錢？</textarea>
+              </div>
+            </div>
+
+            <div class="calculator-actions">
+              <button id="calculateBtn" class="btn-primary">理賠金額估算</button>
+              <button id="clearBtn" class="btn-secondary">清除資訊</button>
+            </div>
+
+            <div id="resultCard" class="result-card" style="display: none;">
+              <div class="result-header">
+                <div class="result-label">估算結果預估</div>
+              </div>
+
+              <div class="result-product-info" id="productInfo">
+                <strong>商品：</strong><span id="resultProduct">富邦人壽 Fun 肆動網路投保傷害保險</span><br/>
+                <strong>請按「理賠金額估算」以顯示使用到的條文內容。</strong>
+              </div>
+              <div class="product-info-toggle">
+                <button id="toggleProductBtn" class="btn-toggle">展開全部條文</button>
+              </div>
+
+              <div class="result-estimate">
+                <span class="estimate-label">預估：本次理賠金額為</span>
+                <span class="estimate-amount"><span id="estimateAmount">101,000</span> 新臺幣</span>
+              </div>
+
+              <div class="result-actions">
+                <button id="detailBtn" class="btn-formula">詳細計算公式</button>
+              </div>
+            </div>
+
+            <div id="formulaModal" class="modal" style="display: none;">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h3>詳細計算公式</h3>
+                  <button class="modal-close" id="closeFormulaBtn">&times;</button>
+                </div>
+                <div class="modal-body" id="formulaBody">
+                  <!-- 詳細公式內容 -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="estimate2.js"></script>
+</body>
+</html>

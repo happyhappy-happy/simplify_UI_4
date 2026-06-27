@@ -1,0 +1,73 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>首頁</title>
+  <link rel="stylesheet" href="styles_index.css" />
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#ffffff">
+</head>
+
+<body>
+
+  <div class="container">
+
+    <header class="header">
+      <div class="header-content">
+        <div class="header-brand">
+          <img src="images/icon.jpg" alt="icon" class="icon" />
+          <h1>保險類別</h1>
+        </div>
+        <div class="header-actions">
+          <a class="index-btn" href="index.html">首頁</a>
+          <a class="estimate-btn" href="https://www.fubon.com/life/">富邦人壽</a>
+        </div>
+      </div>
+    </header>
+
+    <p class="platform-purpose">🎯 本平台目的為簡化複雜的保險契約條文，透過 AI 重點摘要、白話說明、案例分析及語音輔助，幫助您快速理解保險內容。同時，提供理賠金額估算功能，協助使用者快速評估保障效益。</p>
+
+    <h3>請選擇您想要體驗的保險產品</h3>
+
+    <div class="button-row">
+      <div class="product">
+        <h3 class="product-title">壽險</h3>
+        <button class="btn" onclick="goSimplify1()">富邦人壽傳富美滿外幣利率變動型終身壽險<br>(含中文語音)</button>
+      </div>
+      <div class="product">
+        <h3 class="product-title">意外傷害險</h3>
+        <button class="btn" onclick="goSimplify2()">富邦人壽 Fun 肆動網路投保傷害保險<br>(含中文語音)</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function goSimplify1() {
+      window.location.href = "simplify_voice.html";
+    }
+
+    function goEstimate1() {
+      window.location.href = "estimate.html";
+    }
+
+    function goSimplify2() {
+      window.location.href = "simplify2_voice.html";
+    }
+
+    function goEstimate2() {
+      window.location.href = "estimate2.html";
+    }
+  </script>
+
+  <script src="app.js"></script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(() => console.log('Service Worker Registered'));
+  }
+  </script>
+</body>
+</html>
