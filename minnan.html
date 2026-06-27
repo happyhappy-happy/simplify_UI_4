@@ -1,28 +1,50 @@
-<button id="playTTS">播放閩南語語音</button>
-<audio id="audioPlayer" controls></audio>
-<div id="errorMsg" style="color:red;"></div>
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>閩南語 TTS Demo</title>
+</head>
+<body>
+  <h1>閩南語文字轉語音</h1>
 
-<script>
-document.getElementById("playTTS").addEventListener("click", async () => {
-  const text = "你好，我是閩南語語音測試";
-  const errorDiv = document.getElementById("errorMsg");
-  errorDiv.textContent = ""; // 清空錯誤訊息
+  <input id="textInput" type="text" value="你好，我是閩南語語音測試">
+  <button id="playTTS">播放閩南語語音</button>
+  <br><br>
+  <audio id="audioPlayer" controls></audio>
+  <div id="errorMsg" style="color:red;"></div>
 
-  try {
-    const response = await fetch(`/api/tts?text=${encodeURIComponent(text)}`);
-    if (!response.ok) {
-      const err = await response.json();
-      errorDiv.textContent = "語音生成失敗：" + (err.error || "未知錯誤");
-      return;
-    }
+  <script>
+    document.getElementById("playTTS").addEventListener("click", async () => {
+      const text = document.getElementById("textInput").value;
+      const errorDiv = document.getElementById("errorMsg");
+      errorDiv.textContent = ""; // 清空錯誤訊息
 
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-    const audio = document.getElementById("audioPlayer");
-    audio.src = url;
-    audio.play();
-  } catch (e) {
-    errorDiv.textContent = "前端錯誤：" + e.message;
-  }
-});
-</script>
+      try {
+        const response = await fetch(`/api/tts?text=${encodeURIComponent(text)}`);
+
+        if (!response.ok) {
+          // 嘗試解析 JSON 錯誤訊息
+          let errMsg = "未知錯誤";
+          try {
+            const err = await response.json();
+            errMsg = err.error || errMsg;
+          } catch {
+            errMsg = "伺服器回傳非 JSON 錯誤";
+          }
+          errorDiv.textContent = "語音生成失敗：" + errMsg;
+          return;
+        }
+
+        // 成功情況：取得音訊 Blob
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = document.getElementById("audioPlayer");
+        audio.src = url;
+        audio.play();
+      } catch (e) {
+        errorDiv.textContent = "前端錯誤：" + e.message;
+      }
+    });
+  </script>
+</body>
+</html>
