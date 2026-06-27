@@ -7,35 +7,14 @@
 <body>
   <h1>閩南語文字轉語音</h1>
 
-  <input id="textInput" type="text" value="你好，我是閩南語語音測試">
+  <input id="textInput" type="text" value="Lí-hó"> <!-- 建議用台羅拼音 -->
   <button id="playTTS">播放閩南語語音</button>
   <br><br>
   <audio id="audioPlayer" controls></audio>
   <div id="errorMsg" style="color:red;"></div>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const configuredApiBase = params.get("api") || window.__TTS_API_URL__ || "https://simplify-ui-4.vercel.app";
-    const API_BASE_URL = configuredApiBase.replace(/\/$/, "");
-
-    function fallbackSpeech(text) {
-      if (!("speechSynthesis" in window)) return false;
-      const synth = window.speechSynthesis;
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "zh-TW";
-      utterance.rate = 1;
-      utterance.pitch = 1;
-
-      const voices = synth.getVoices();
-      const preferredVoice = voices.find((voice) => /zh|TW|Taiwan/i.test(voice.lang)) || voices[0];
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
-      }
-
-      synth.cancel();
-      synth.speak(utterance);
-      return true;
-    }
+    const API_URL = "https://huggingface.co/spaces/happy0708/minnan_test/api/predict/";
 
     document.getElementById("playTTS").addEventListener("click", async () => {
       const text = document.getElementById("textInput").value;
@@ -43,37 +22,29 @@
       errorDiv.textContent = "";
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/tts?text=${encodeURIComponent(text)}`, {
-          cache: "no-store",
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: [text] })
         });
 
         if (!response.ok) {
-          let errMsg = "未知錯誤";
-          const contentType = response.headers.get("content-type") || "";
           const bodyText = await response.text();
-          if (contentType.includes("application/json")) {
-            try {
-              const err = JSON.parse(bodyText);
-              errMsg = err.error || JSON.stringify(err);
-            } catch {
-              errMsg = bodyText || errMsg;
-            }
-          } else {
-            errMsg = bodyText || "伺服器回傳非 JSON 錯誤";
-          }
-          errorDiv.textContent = "語音生成失敗：" + errMsg;
-          fallbackSpeech(text);
+          errorDiv.textContent = "語音生成失敗：" + bodyText;
           return;
         }
 
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
+        const result = await response.json();
+        const audioData = result.data[0].data; // Base64 音訊
+        const audioBytes = Uint8Array.from(atob(audioData), c => c.charCodeAt(0));
+        const audioBlob = new Blob([audioBytes], { type: "audio/wav" });
+        const url = URL.createObjectURL(audioBlob);
+
         const audio = document.getElementById("audioPlayer");
         audio.src = url;
         await audio.play();
       } catch (e) {
         errorDiv.textContent = "語音生成失敗：" + e.message;
-        fallbackSpeech(text);
       }
     });
   </script>
