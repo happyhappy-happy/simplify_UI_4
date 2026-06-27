@@ -50,7 +50,9 @@ module.exports = async function handler(req, res) {
     return res.send(Buffer.from(arrayBuffer));
   } catch (error) {
     console.error("Proxy error:", error);
-    const message = error?.name === "AbortError" ? "Hugging Face request timed out" : error.message;
-    return res.status(500).json({ error: message });
+    const message = error?.name === "AbortError"
+      ? "Hugging Face request timed out"
+      : error?.message || "fetch failed";
+    return res.status(500).json({ error: message, detail: String(error) });
   }
 };
