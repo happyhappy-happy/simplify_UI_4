@@ -88,10 +88,9 @@
           ? audioUrl
           : `https://happy0708-minnan-test.hf.space/${audioUrl}`;
 
-        const downloadUrl = normalizedAudioUrl.replace(
-          "gradio_api/file=/",
-          "gradio_api/file=/tmp/"
-        );
+        const downloadUrl = normalizedAudioUrl.startsWith("https://happy0708-minnan-test.hf.space/")
+          ? normalizedAudioUrl.replace("gradio_api/file=/", "gradio_api/file=/")
+          : normalizedAudioUrl;
 
         const audioResponse = await fetch(downloadUrl, {
           headers: { Accept: "audio/*" }
