@@ -26,11 +26,12 @@
 
         try {
           const result = JSON.parse(text);
-          if (result?.data?.[0]?.data) {
-            return result.data[0].data;
+          const fileItem = result?.data?.[0];
+          if (fileItem?.url) {
+            return fileItem.url;
           }
-          if (result?.data?.[0]?.path) {
-            return result.data[0].path;
+          if (fileItem?.path) {
+            return fileItem.path;
           }
         } catch {
           // ignore
@@ -76,26 +77,14 @@
           return;
         }
 
-        const audioData = await pollEvent(eventId);
-        if (!audioData) {
+        const audioUrl = await pollEvent(eventId);
+        if (!audioUrl) {
           errorDiv.textContent = "語音生成失敗：Space 未回傳音訊資料";
           return;
         }
 
-        let audioBytes;
-        if (typeof audioData === "string") {
-          audioBytes = Uint8Array.from(atob(audioData), (c) => c.charCodeAt(0));
-        } else if (audioData instanceof ArrayBuffer) {
-          audioBytes = new Uint8Array(audioData);
-        } else {
-          errorDiv.textContent = "語音生成失敗：音訊格式不支援";
-          return;
-        }
-
-        const audioBlob = new Blob([audioBytes], { type: "audio/wav" });
-        const url = URL.createObjectURL(audioBlob);
         const audio = document.getElementById("audioPlayer");
-        audio.src = url;
+        audio.src = audioUrl;
         await audio.play();
       } catch (e) {
         errorDiv.textContent = "語音生成失敗：" + e.message;
