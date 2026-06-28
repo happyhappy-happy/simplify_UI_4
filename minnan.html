@@ -88,9 +88,13 @@
           ? audioUrl
           : `https://happy0708-minnan-test.hf.space/${audioUrl}`;
 
-        const downloadUrl = normalizedAudioUrl.includes("gradio_api/file=/")
-          ? normalizedAudioUrl.replace("gradio_api/file=/", "gradio_api/file=/")
-          : `https://happy0708-minnan-test.hf.space/gradio_api/file=${encodeURIComponent(normalizedAudioUrl.split("file=")[1] || normalizedAudioUrl)}`;
+        const filePath = normalizedAudioUrl.includes("file=")
+          ? decodeURIComponent(normalizedAudioUrl.split("file=")[1])
+          : normalizedAudioUrl;
+
+        const downloadUrl = `https://happy0708-minnan-test.hf.space/gradio_api/file=${encodeURIComponent(filePath)}`;
+
+        console.log("downloadUrl", downloadUrl);
 
         const audioResponse = await fetch(downloadUrl, {
           headers: { Accept: "audio/*" }
