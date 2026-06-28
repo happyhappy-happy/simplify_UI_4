@@ -84,7 +84,16 @@
           return;
         }
 
-        const audioResponse = await fetch(audioUrl, {
+        const normalizedAudioUrl = audioUrl.startsWith("http")
+          ? audioUrl
+          : `https://happy0708-minnan-test.hf.space/${audioUrl}`;
+
+        const downloadUrl = normalizedAudioUrl.replace(
+          "gradio_api/file=/",
+          "gradio_api/file=/tmp/"
+        );
+
+        const audioResponse = await fetch(downloadUrl, {
           headers: { Accept: "audio/*" }
         });
         console.log("audio response status", audioResponse.status);
