@@ -84,10 +84,15 @@
           return;
         }
 
+        const audioResponse = await fetch(audioUrl);
+        if (!audioResponse.ok) {
+          throw new Error("無法下載音訊檔");
+        }
+
+        const audioBlob = await audioResponse.blob();
+        const audioUrlObject = URL.createObjectURL(audioBlob);
         const audio = document.getElementById("audioPlayer");
-        audio.crossOrigin = "anonymous";
-        audio.preload = "auto";
-        audio.src = audioUrl;
+        audio.src = audioUrlObject;
         await audio.play();
       } catch (e) {
         errorDiv.textContent = "語音生成失敗：" + e.message;
