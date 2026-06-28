@@ -88,12 +88,7 @@
           ? audioUrl
           : `https://happy0708-minnan-test.hf.space/${audioUrl}`;
 
-        const filePath = normalizedAudioUrl.includes("file=")
-          ? decodeURIComponent(normalizedAudioUrl.split("file=")[1])
-          : normalizedAudioUrl;
-
-        const downloadUrl = `https://happy0708-minnan-test.hf.space/gradio_api/file=${encodeURIComponent(filePath)}`;
-
+        const downloadUrl = normalizedAudioUrl;
         console.log("downloadUrl", downloadUrl);
 
         const audioResponse = await fetch(downloadUrl, {
@@ -110,9 +105,15 @@
         const arrayBuffer = await audioResponse.arrayBuffer();
         console.log("audio bytes", arrayBuffer.byteLength);
 
-        const audioBlob = new Blob([arrayBuffer], { type: audioResponse.headers.get("content-type") || "audio/wav" });
+        const contentType = audioResponse.headers.get("content-type") || "";
+        const inferredMimeType = contentType && contentType !== "application/octet-stream"
+          ? contentType
+          : (downloadUrl.toLowerCase().endsWith(".wav") ? "audio/wav" : "audio/mpeg");
+
+        const audioBlob = new Blob([arrayBuffer], { type: inferredMimeType });
         const audioUrlObject = URL.createObjectURL(audioBlob);
         const audio = document.getElementById("audioPlayer");
+        audio.crossOrigin = "anonymous";
         audio.src = audioUrlObject;
         audio.load();
 
