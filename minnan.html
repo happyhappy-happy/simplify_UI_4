@@ -84,9 +84,12 @@
           return;
         }
 
-        const audioResponse = await fetch(audioUrl);
+        const audioResponse = await fetch(audioUrl, {
+          headers: { Accept: "audio/*" }
+        });
         if (!audioResponse.ok) {
-          throw new Error("無法下載音訊檔");
+          const text = await audioResponse.text();
+          throw new Error(`無法下載音訊檔: ${audioResponse.status} ${text}`);
         }
 
         const audioBlob = await audioResponse.blob();
