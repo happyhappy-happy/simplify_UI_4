@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>閩南語 TTS Demo</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='56'%3E🗣%3C/text%3E%3C/svg%3E" />
 </head>
 <body>
   <h1>閩南語文字轉語音</h1>
@@ -84,6 +85,8 @@
         }
 
         const audio = document.getElementById("audioPlayer");
+        audio.crossOrigin = "anonymous";
+        audio.preload = "auto";
         audio.src = audioUrl;
         await audio.play();
       } catch (e) {
