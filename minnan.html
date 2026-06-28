@@ -18,6 +18,35 @@
     const API_URL = "https://happy0708-minnan-test.hf.space/gradio_api/call/v2/tts";
     const EVENT_URL = "https://happy0708-minnan-test.hf.space/gradio_api/call/v2/tts";
 
+    function parseEventPayload(text) {
+      const trimmedText = (text || "").trim();
+      if (!trimmedText) {
+        return null;
+      }
+
+      const dataLines = trimmedText
+        .split(/\r?\n/)
+        .filter((line) => line.startsWith("data:"));
+
+      if (dataLines.length > 0) {
+        const dataText = dataLines
+          .map((line) => line.replace(/^data:\s*/, "").trim())
+          .join("\n");
+
+        try {
+          return JSON.parse(dataText);
+        } catch {
+          // fall back to the raw text below
+        }
+      }
+
+      try {
+        return JSON.parse(trimmedText);
+      } catch {
+        return null;
+      }
+    }
+
     async function pollEvent(eventId) {
       const url = `${EVENT_URL}/${eventId}`;
       for (let i = 0; i < 20; i++) {
@@ -25,17 +54,17 @@
         const text = await response.text();
         console.log("poll", i, text);
 
-        try {
-          const result = JSON.parse(text);
-          const fileItem = result?.data?.[0];
-          if (fileItem?.url) {
-            return fileItem.url;
-          }
-          if (fileItem?.path) {
-            return fileItem.path;
-          }
-        } catch {
-          // ignore
+        const result = parseEventPayload(text);
+        console.log("parsed poll", i, result);
+
+        const payload = result?.data?.[0] ?? result?.[0] ?? result;
+        const fileItem = payload?.data?.[0] ?? payload;
+
+        if (fileItem?.url) {
+          return fileItem.url;
+        }
+        if (fileItem?.path) {
+          return fileItem.path;
         }
 
         await new Promise((resolve) => setTimeout(resolve, 1000));
