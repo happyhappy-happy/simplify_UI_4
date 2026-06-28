@@ -45,7 +45,35 @@
           return;
         }
 
-        const audioData = result?.data?.[0]?.data || result?.data?.[0];
+        console.log("parsed result", result);
+
+        function findAudioPayload(value) {
+          if (!value || typeof value !== "object") return null;
+          if (Array.isArray(value)) {
+            for (const item of value) {
+              const found = findAudioPayload(item);
+              if (found) return found;
+            }
+            return null;
+          }
+
+          if (typeof value === "string") {
+            return value;
+          }
+
+          const keys = Object.keys(value);
+          for (const key of keys) {
+            const lower = key.toLowerCase();
+            if (["audio", "data", "result", "output", "file", "wav", "blob"].includes(lower)) {
+              const found = findAudioPayload(value[key]);
+              if (found) return found;
+            }
+          }
+
+          return null;
+        }
+
+        const audioData = findAudioPayload(result);
         if (!audioData) {
           errorDiv.textContent = "語音生成失敗：Space 未回傳音訊資料";
           return;
