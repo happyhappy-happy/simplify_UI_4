@@ -14,7 +14,7 @@
   <div id="errorMsg" style="color:red;"></div>
 
   <script>
-    const API_URL = "https://huggingface.co/spaces/happy0708/minnan_test/api/predict/";
+    const API_URL = "https://happy0708-minnan-test.hf.space/gradio_api/call/v2/tts";
 
     document.getElementById("playTTS").addEventListener("click", async () => {
       const text = document.getElementById("textInput").value;
@@ -22,29 +22,47 @@
       errorDiv.textContent = "";
 
       try {
-        // 呼叫 Hugging Face Space API
         const response = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data: [text] })
+          body: JSON.stringify({ text })
         });
 
+        console.log("status", response.status);
+        const bodyText = await response.text();
+        console.log("body", bodyText);
+
         if (!response.ok) {
-          const bodyText = await response.text();
           errorDiv.textContent = "語音生成失敗：" + bodyText;
           return;
         }
 
-        // 解析回傳 JSON
-        const result = await response.json();
-        const audioData = result.data[0].data; // Base64 音訊字串
+        let result;
+        try {
+          result = JSON.parse(bodyText);
+        } catch {
+          errorDiv.textContent = "語音生成失敗：回傳內容不是 JSON";
+          return;
+        }
 
-        // Base64 → Uint8Array → Blob → URL
-        const audioBytes = Uint8Array.from(atob(audioData), c => c.charCodeAt(0));
+        const audioData = result?.data?.[0]?.data || result?.data?.[0];
+        if (!audioData) {
+          errorDiv.textContent = "語音生成失敗：Space 未回傳音訊資料";
+          return;
+        }
+
+        let audioBytes;
+        if (typeof audioData === "string") {
+          audioBytes = Uint8Array.from(atob(audioData), (c) => c.charCodeAt(0));
+        } else if (audioData instanceof ArrayBuffer) {
+          audioBytes = new Uint8Array(audioData);
+        } else {
+          errorDiv.textContent = "語音生成失敗：音訊格式不支援";
+          return;
+        }
+
         const audioBlob = new Blob([audioBytes], { type: "audio/wav" });
         const url = URL.createObjectURL(audioBlob);
-
-        // 播放音訊
         const audio = document.getElementById("audioPlayer");
         audio.src = url;
         await audio.play();
