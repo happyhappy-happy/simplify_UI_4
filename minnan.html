@@ -14,25 +14,51 @@
   <div id="errorMsg" style="color:red;"></div>
 
   <script>
-    function speakWithBrowser(text) {
-      if (!('speechSynthesis' in window)) {
-        document.getElementById('errorMsg').textContent = '瀏覽器不支援語音播放';
-        return;
+    const SPACE_URL = 'https://happy0708-minnan-test.hf.space';
+
+    async function generateSpeechFromSpace(text) {
+      const response = await fetch(`${SPACE_URL}/gradio_api/call/v2/tts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Space request failed');
       }
 
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'zh-TW';
-      utterance.rate = 1;
-      utterance.pitch = 1;
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utterance);
+      const { event_id } = await response.json();
+      const resultResponse = await fetch(`${SPACE_URL}/gradio_api/call/tts/${event_id}`);
+      const resultText = await resultResponse.text();
+
+      const match = resultText.match(/data:\s*(\[.*\])/);
+      if (!match) {
+        throw new Error('No audio result returned from Space');
+      }
+
+      const payload = JSON.parse(match[1]);
+      const audioUrl = payload?.[0]?.[1]?.url;
+      if (!audioUrl) {
+        throw new Error('No audio URL returned from Space');
+      }
+
+      return audioUrl;
     }
 
-    document.getElementById('playTTS').addEventListener('click', () => {
+    document.getElementById('playTTS').addEventListener('click', async () => {
       const text = document.getElementById('textInput').value;
       const errorDiv = document.getElementById('errorMsg');
       errorDiv.textContent = '';
-      speakWithBrowser(text);
+
+      try {
+        const audioUrl = await generateSpeechFromSpace(text);
+        const audio = document.getElementById('audioPlayer');
+        audio.src = audioUrl;
+        await audio.play();
+      } catch (e) {
+        errorDiv.textContent = '語音生成失敗：' + e.message;
+      }
     });
   </script>
 </body>
