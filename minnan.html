@@ -14,50 +14,42 @@
   <div id="errorMsg" style="color:red;"></div>
 
   <script>
-    const SPACE_URL = 'https://happy0708-minnan-test.hf.space';
+    const API_URL = "https://huggingface.co/spaces/happy0708/minnan_test/api/predict/";
 
-    async function generateSpeechFromSpace(text) {
-      const response = await fetch(`${SPACE_URL}/gradio_api/call/v2/tts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
-      });
-
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(errText || 'Space request failed');
-      }
-
-      const { event_id } = await response.json();
-      const resultResponse = await fetch(`${SPACE_URL}/gradio_api/call/tts/${event_id}`);
-      const resultText = await resultResponse.text();
-
-      const match = resultText.match(/data:\s*(\[.*\])/);
-      if (!match) {
-        throw new Error('No audio result returned from Space');
-      }
-
-      const payload = JSON.parse(match[1]);
-      const audioUrl = payload?.[0]?.[1]?.url;
-      if (!audioUrl) {
-        throw new Error('No audio URL returned from Space');
-      }
-
-      return audioUrl;
-    }
-
-    document.getElementById('playTTS').addEventListener('click', async () => {
-      const text = document.getElementById('textInput').value;
-      const errorDiv = document.getElementById('errorMsg');
-      errorDiv.textContent = '';
+    document.getElementById("playTTS").addEventListener("click", async () => {
+      const text = document.getElementById("textInput").value;
+      const errorDiv = document.getElementById("errorMsg");
+      errorDiv.textContent = "";
 
       try {
-        const audioUrl = await generateSpeechFromSpace(text);
-        const audio = document.getElementById('audioPlayer');
-        audio.src = audioUrl;
+        // 呼叫 Hugging Face Space API
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: [text] })
+        });
+
+        if (!response.ok) {
+          const bodyText = await response.text();
+          errorDiv.textContent = "語音生成失敗：" + bodyText;
+          return;
+        }
+
+        // 解析回傳 JSON
+        const result = await response.json();
+        const audioData = result.data[0].data; // Base64 音訊字串
+
+        // Base64 → Uint8Array → Blob → URL
+        const audioBytes = Uint8Array.from(atob(audioData), c => c.charCodeAt(0));
+        const audioBlob = new Blob([audioBytes], { type: "audio/wav" });
+        const url = URL.createObjectURL(audioBlob);
+
+        // 播放音訊
+        const audio = document.getElementById("audioPlayer");
+        audio.src = url;
         await audio.play();
       } catch (e) {
-        errorDiv.textContent = '語音生成失敗：' + e.message;
+        errorDiv.textContent = "語音生成失敗：" + e.message;
       }
     });
   </script>
