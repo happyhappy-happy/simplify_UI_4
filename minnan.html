@@ -1,124 +1,128 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>閩南語 TTS Demo</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='56'%3E🗣%3C/text%3E%3C/svg%3E" />
+<meta charset="UTF-8">
+<title>閩南語 TTS Demo</title>
 </head>
+
 <body>
-  <h1>閩南語文字轉語音</h1>
 
-  <input id="textInput" type="text" value="Lí-hó"> <!-- 建議用台羅拼音 -->
-  <button id="playTTS">播放閩南語語音</button>
-  <br><br>
-  <audio id="audioPlayer" controls></audio>
-  <div id="errorMsg" style="color:red;"></div>
+<h2>閩南語 TTS Demo</h2>
 
-  <script>
-    const API_URL = "https://happy0708-minnan-test.hf.space/gradio_api/call/v2/tts";
-    const EVENT_URL = "https://happy0708-minnan-test.hf.space/gradio_api/call/v2/tts";
+<input
+    id="textInput"
+    type="text"
+    value="Lí hó"
+/>
 
-    async function pollEvent(eventId) {
-      const url = `${EVENT_URL}/${eventId}`;
-      for (let i = 0; i < 20; i++) {
-        const response = await fetch(url, { method: "GET" });
-        const text = await response.text();
-        console.log("poll", i, text);
+<button id="playBtn">
+播放
+</button>
 
-        try {
-          const result = JSON.parse(text);
-          const fileItem = result?.data?.[0];
-          if (fileItem?.url) {
-            return fileItem.url;
-          }
-          if (fileItem?.path) {
-            return fileItem.path;
-          }
-        } catch {
-          // ignore
+<br><br>
+
+<audio
+    id="audioPlayer"
+    controls
+></audio>
+
+<p id="msg" style="color:red;"></p>
+
+<script>
+
+const SPACE = "https://happy0708-minnan-test.hf.space";
+
+const API = `${SPACE}/gradio_api/call/v2/tts`;
+
+async function pollEvent(eventId){
+
+    const pollUrl = `${API}/${eventId}`;
+
+    while(true){
+
+        const res = await fetch(pollUrl);
+
+        const text = await res.text();
+
+        console.log(text);
+
+        // 找 data:
+        const match = text.match(/data:\s*(.+)/);
+
+        if(match){
+
+            const data = JSON.parse(match[1]);
+
+            if(data.length>0 && data[0].url){
+
+                return data[0].url;
+
+            }
+
         }
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-      return null;
+        // 完成前每秒查一次
+        await new Promise(r=>setTimeout(r,1000));
+
     }
 
-    document.getElementById("playTTS").addEventListener("click", async () => {
-      const text = document.getElementById("textInput").value;
-      const errorDiv = document.getElementById("errorMsg");
-      errorDiv.textContent = "";
+}
 
-      try {
-        const response = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text })
+document.getElementById("playBtn").onclick = async ()=>{
+
+    const msg=document.getElementById("msg");
+    msg.textContent="";
+
+    try{
+
+        const text=document.getElementById("textInput").value;
+
+        const res=await fetch(API,{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                text:text
+            })
         });
 
-        console.log("status", response.status);
-        const bodyText = await response.text();
-        console.log("body", bodyText);
+        console.log("status",res.status);
 
-        if (!response.ok) {
-          errorDiv.textContent = "語音生成失敗：" + bodyText;
-          return;
+        const body=await res.json();
+
+        console.log(body);
+
+        const eventId=body.event_id;
+
+        if(!eventId){
+
+            throw new Error("沒有 event_id");
+
         }
 
-        let result;
-        try {
-          result = JSON.parse(bodyText);
-        } catch {
-          errorDiv.textContent = "語音生成失敗：回傳內容不是 JSON";
-          return;
-        }
+        const audioUrl=await pollEvent(eventId);
 
-        const eventId = result?.event_id || result?.eventId;
-        if (!eventId) {
-          errorDiv.textContent = "語音生成失敗：Space 未回傳事件 ID";
-          return;
-        }
+        console.log(audioUrl);
 
-        const audioUrl = await pollEvent(eventId);
-        if (!audioUrl) {
-          errorDiv.textContent = "語音生成失敗：Space 未回傳音訊資料";
-          return;
-        }
+        const player=document.getElementById("audioPlayer");
 
-        const normalizedAudioUrl = audioUrl.startsWith("http")
-          ? audioUrl
-          : `https://happy0708-minnan-test.hf.space/${audioUrl}`;
+        player.src=audioUrl;
 
-        const filePath = normalizedAudioUrl.includes("file=")
-          ? decodeURIComponent(normalizedAudioUrl.split("file=")[1])
-          : normalizedAudioUrl;
+        await player.play();
 
-        const downloadUrl = `https://happy0708-minnan-test.hf.space/gradio_api/file=${encodeURIComponent(filePath)}`;
+    }
+    catch(err){
 
-        console.log("downloadUrl", downloadUrl);
+        console.error(err);
 
-        const audioResponse = await fetch(downloadUrl, {
-          headers: { Accept: "audio/*" }
-        });
-        console.log("audio response status", audioResponse.status);
-        console.log("audio response headers", Object.fromEntries(audioResponse.headers.entries()));
+        msg.textContent=err.message;
 
-        if (!audioResponse.ok) {
-          const text = await audioResponse.text();
-          throw new Error(`無法下載音訊檔: ${audioResponse.status} ${text}`);
-        }
+    }
 
-        const arrayBuffer = await audioResponse.arrayBuffer();
-        console.log("audio bytes", arrayBuffer.byteLength);
+}
 
-        const audioBlob = new Blob([arrayBuffer], { type: "audio/wav" });
-        const audioUrlObject = URL.createObjectURL(audioBlob);
-        const audio = document.getElementById("audioPlayer");
-        audio.src = audioUrlObject;
-        await audio.play();
-      } catch (e) {
-        errorDiv.textContent = "語音生成失敗：" + e.message;
-      }
-    });
-  </script>
+</script>
+
 </body>
 </html>
