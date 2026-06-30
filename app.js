@@ -279,6 +279,9 @@ async function playMinnanSpeech(button) {
   const tabContent = button.closest(".tab-content");
   if (!tabContent) return;
 
+  // 如果按钮已经禁用，说明正在加载，不要重复点击
+  if (button.disabled) return;
+
   const text = button.getAttribute("data-minnan-text") || tabContent.getAttribute("data-minnan-text") || getTextFromTabContent(tabContent);
   if (!text) return;
 
@@ -383,6 +386,7 @@ function resetAllPlayButtons() {
     const isMinnan = isMinnanButton(btn);
     btn.textContent = isMinnan ? "▶ 播放閩南語語音說明" : "▶ 播放中文語音說明";
     btn.style.background = "var(--primary-yellow)";
+    btn.disabled = false;
   });
   currentSpeechButton = null;
   currentUtterance = null;
