@@ -112,6 +112,96 @@ function resetExplanationPanel() {
 let currentSpeechButton = null;
 let currentUtterance = null;
 
+// ------- MinNan TTS support -------
+const MINNAN_TTS_API_URL = "https://happy0708-minnan-test.hf.space/gradio_api/call/v2/tts";
+const MINNAN_TTS_EVENT_URL = "https://happy0708-minnan-test.hf.space/gradio_api/call/v2/tts";
+
+function parseEventPayload(text) {
+  const trimmedText = (text || "").trim();
+  if (!trimmedText) return null;
+
+  const dataLines = trimmedText
+    .split(/\r?\n/)
+    .filter((line) => line.startsWith("data:"));
+
+  if (dataLines.length > 0) {
+    const dataText = dataLines
+      .map((line) => line.replace(/^data:\s*/, "").trim())
+      .join("\n");
+    try {
+      return JSON.parse(dataText);
+    } catch {}
+  }
+
+  try {
+    return JSON.parse(trimmedText);
+  } catch {
+    return null;
+  }
+}
+
+async function pollEvent(eventId) {
+  const url = `${MINNAN_TTS_EVENT_URL}/${eventId}`;
+  for (let i = 0; i < 60; i++) {
+    const response = await fetch(url, { method: "GET" });
+    const text = await response.text();
+    const result = parseEventPayload(text);
+    const payload = result?.data?.[0] ?? result?.[0] ?? result;
+    const fileItem = payload?.data?.[0] ?? payload;
+
+    if (fileItem?.url) return fileItem.url;
+    if (fileItem?.path) return fileItem.path;
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+  return null;
+}
+
+async function fetchMinnanAudio(text) {
+  const response = await fetch(MINNAN_TTS_API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text })
+  });
+
+  const bodyText = await response.text();
+  if (!response.ok) throw new Error(bodyText || "語音生成失敗");
+
+  let result;
+  try {
+    result = JSON.parse(bodyText);
+  } catch {
+    throw new Error("回傳內容不是 JSON");
+  }
+
+  const eventId = result?.event_id || result?.eventId;
+  if (!eventId) throw new Error("Space 未回傳事件 ID");
+
+  const audioUrl = await pollEvent(eventId);
+  if (!audioUrl) throw new Error("Space 未回傳音訊資料");
+
+  const normalizedAudioUrl = audioUrl.startsWith("http")
+    ? audioUrl
+    : `https://happy0708-minnan-test.hf.space/${audioUrl}`;
+
+  const audioResponse = await fetch(normalizedAudioUrl, { headers: { Accept: "audio/*" } });
+  if (!audioResponse.ok) throw new Error("音訊下載失敗");
+
+  const arrayBuffer = await audioResponse.arrayBuffer();
+  const contentType = audioResponse.headers.get("content-type") || "";
+  const inferredMimeType = contentType && contentType !== "application/octet-stream"
+    ? contentType
+    : (normalizedAudioUrl.toLowerCase().endsWith(".wav") ? "audio/wav" : "audio/mpeg");
+
+  const audioBlob = new Blob([arrayBuffer], { type: inferredMimeType });
+  return URL.createObjectURL(audioBlob);
+}
+
+function isMinnanButton(button) {
+  return button && (button.getAttribute("data-voice") === "minnan" || (button.textContent || "").includes("閩南語"));
+}
+// ------- end MinNan support -------
+
 // 设置音频播放器
 function setupAudioPlayer() {
   const allPlayBtns = document.querySelectorAll(".play-btn");
@@ -129,10 +219,29 @@ function toggleSpeech(button) {
   const tabContent = button.closest(".tab-content");
   if (!tabContent) return;
 
+  const isCurrentButton = button === currentSpeechButton;
+
+  if (isMinnanButton(button)) {
+    if (isCurrentButton && currentUtterance instanceof HTMLAudioElement) {
+      if (currentUtterance.paused) {
+        currentUtterance.play().catch(() => {
+          updateButtonState(button, "stopped");
+        });
+        updateButtonState(button, "playing");
+      } else {
+        currentUtterance.pause();
+        updateButtonState(button, "paused");
+      }
+      return;
+    }
+
+    playMinnanSpeech(button);
+    return;
+  }
+
   const text = getTextFromTabContent(tabContent);
   if (!text) return;
 
-  const isCurrentButton = button === currentSpeechButton;
   const synth = window.speechSynthesis;
 
   if (isCurrentButton && synth.speaking && !synth.paused) {
@@ -154,6 +263,50 @@ function toggleSpeech(button) {
 
   currentSpeechButton = button;
   speakText(text, button);
+}
+
+async function playMinnanSpeech(button) {
+  const tabContent = button.closest(".tab-content");
+  if (!tabContent) return;
+
+  const text = button.getAttribute("data-minnan-text") || tabContent.getAttribute("data-minnan-text") || getTextFromTabContent(tabContent);
+  if (!text) return;
+
+  const synth = window.speechSynthesis;
+  if (synth && (synth.speaking || synth.paused)) {
+    synth.cancel();
+  }
+
+  resetAllPlayButtons();
+  currentSpeechButton = button;
+  updateButtonState(button, "playing");
+
+  try {
+    const objectUrl = await fetchMinnanAudio(text);
+    const audio = new Audio(objectUrl);
+    currentUtterance = audio;
+
+    audio.onended = () => {
+      updateButtonState(button, "stopped");
+      currentSpeechButton = null;
+      currentUtterance = null;
+      URL.revokeObjectURL(objectUrl);
+    };
+
+    audio.onerror = () => {
+      updateButtonState(button, "stopped");
+      currentSpeechButton = null;
+      currentUtterance = null;
+      URL.revokeObjectURL(objectUrl);
+    };
+
+    await audio.play();
+  } catch (error) {
+    console.error(error);
+    updateButtonState(button, "stopped");
+    currentSpeechButton = null;
+    currentUtterance = null;
+  }
 }
 
 function getTextFromTabContent(tabContent) {
@@ -193,18 +346,23 @@ function speakText(text, button) {
 
 function updateButtonState(button, state) {
   if (!button) return;
+  const isMinnan = isMinnanButton(button);
   if (state === "playing") {
-    button.textContent = "⏸ 暫停語音";
+    button.textContent = isMinnan ? "⏸ 暫停閩南語語音" : "⏸ 暫停中文語音";
     button.style.background = "#6c757d";
+  } else if (state === "paused") {
+    button.textContent = isMinnan ? "▶ 繼續閩南語語音" : "▶ 繼續中文語音";
+    button.style.background = "#e9a428";
   } else {
-    button.textContent = "▶ 播放語音說明";
+    button.textContent = isMinnan ? "▶ 播放閩南語語音說明" : "▶ 播放中文語音說明";
     button.style.background = "var(--primary-yellow)";
   }
 }
 
 function resetAllPlayButtons() {
   document.querySelectorAll(".play-btn").forEach((btn) => {
-    btn.textContent = "▶ 播放語音說明";
+    const isMinnan = isMinnanButton(btn);
+    btn.textContent = isMinnan ? "▶ 播放閩南語語音說明" : "▶ 播放中文語音說明";
     btn.style.background = "var(--primary-yellow)";
   });
   currentSpeechButton = null;

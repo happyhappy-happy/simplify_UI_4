@@ -774,6 +774,16 @@ textarea,
   color: white;
 }
 
+.button-group {
+  display: flex;
+  gap: 12px;
+}
+
+.button-group .play-btn {
+  width: 100%;
+  flex: 1;
+}
+
 .transcript {
   font-size: 15px;
   color: var(--text-dark);
