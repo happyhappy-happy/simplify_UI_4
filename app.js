@@ -124,15 +124,25 @@ function parseEventPayload(text) {
     .split(/\r?\n/)
     .filter((line) => line.startsWith("data:"));
 
-  if (dataLines.length > 0) {
-    const dataText = dataLines
-      .map((line) => line.replace(/^data:\s*/, "").trim())
-      .join("\n");
+  // 從最後一筆 data: 開始找
+  for (let i = dataLines.length - 1; i >= 0; i--) {
+    const dataText = dataLines[i]
+      .replace(/^data:\s*/, "")
+      .trim();
+
+    // 忽略 heartbeat 的 null
+    if (!dataText || dataText === "null") {
+      continue;
+    }
+
     try {
       return JSON.parse(dataText);
-    } catch {}
+    } catch (e) {
+      console.warn("JSON parse failed:", dataText, e);
+    }
   }
 
+  // 有些 API 直接回 JSON
   try {
     return JSON.parse(trimmedText);
   } catch {
@@ -142,7 +152,7 @@ function parseEventPayload(text) {
 
 async function pollEvent(eventId) {
   const url = `${MINNAN_TTS_EVENT_URL}/${eventId}`;
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 20; i++) {
     const response = await fetch(url, { method: "GET" });
     const text = await response.text();
     const result = parseEventPayload(text);
