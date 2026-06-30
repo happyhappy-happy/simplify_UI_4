@@ -289,12 +289,14 @@ async function playMinnanSpeech(button) {
 
   resetAllPlayButtons();
   currentSpeechButton = button;
-  updateButtonState(button, "playing");
+  updateButtonState(button, "preparing");
 
   try {
     const objectUrl = await fetchMinnanAudio(text);
     const audio = new Audio(objectUrl);
     currentUtterance = audio;
+
+    updateButtonState(button, "playing");
 
     audio.onended = () => {
       updateButtonState(button, "stopped");
@@ -357,15 +359,22 @@ function speakText(text, button) {
 function updateButtonState(button, state) {
   if (!button) return;
   const isMinnan = isMinnanButton(button);
-  if (state === "playing") {
+  if (state === "preparing") {
+    button.textContent = isMinnan ? "⏳ 閩南語語音準備中..." : "⏳ 語音準備中...";
+    button.style.background = "#ffc107";
+    button.disabled = true;
+  } else if (state === "playing") {
     button.textContent = isMinnan ? "⏸ 暫停閩南語語音" : "⏸ 暫停中文語音";
     button.style.background = "#6c757d";
+    button.disabled = false;
   } else if (state === "paused") {
     button.textContent = isMinnan ? "▶ 繼續閩南語語音" : "▶ 繼續中文語音";
     button.style.background = "#e9a428";
+    button.disabled = false;
   } else {
     button.textContent = isMinnan ? "▶ 播放閩南語語音說明" : "▶ 播放中文語音說明";
     button.style.background = "var(--primary-yellow)";
+    button.disabled = false;
   }
 }
 
